@@ -1,6 +1,10 @@
 package org.obl.bdd
 package samples
 
+import Predicates._
+
+import SelfDescribeF1._
+
 trait CalculatorService {
   def calculate(str: String): Int
 }
@@ -18,7 +22,12 @@ trait CalculatorServiceSteps extends App with BDD[CalculatorTestState, String] {
   def `the calculator is run`: Step = step { state =>
     state.copy(result = Some(state.calculatorService.calculate(state.input)))
   }
-
+  
+  def `the result given by calculator is`(predicate:Int => Boolean):Expectation = expectation { state =>
+    if (state.result.exists(predicate(_))) Ok
+    else Fail(s"expecting result $predicate got ${state.result}")
+  }
+  
   def `the output should be`(result: Int): Expectation = expectation { state =>
     if (state.result.exists(_ == result)) Ok
     else Fail(s"expecting $result got ${state.result}")
@@ -39,6 +48,12 @@ object CalculatorFeature extends Feature[CalculatorTestState, String](
     `given the input`("2+2")
       When `the calculator is run`
       Then `the output should be`(4)),
+
+  Scenario("Add 3 numbers",
+
+    `given the input`("2+2+4")
+      When `the calculator is run`
+      Then `the result given by calculator is`( `equal to`(6) )),
 
   OutlineScenario(
     "Some expressions",
