@@ -2,7 +2,7 @@ package org.obl.bdd
 
 import java.io.PrintWriter
 
-class ConsoleReporter(writer: PrintWriter, featureRunner:FeatureRunner) {
+class ConsoleReporter(writer: PrintWriter, featureRunner: FeatureRunner) {
 
   private def subjectDescription[S, E](subj: EventSubject[S, E]) = subj match {
     case SourceSubject(i) => s"""The step "$i""""
@@ -50,8 +50,7 @@ class ConsoleReporter(writer: PrintWriter, featureRunner:FeatureRunner) {
     writer.flush()
   }
 
-  def report(infos:Seq[Feature[_,_]]):Unit = 
+  def report(infos: Seq[Feature[_, _]]): Unit =
     infos.foreach(report(_))
-  
 
 }

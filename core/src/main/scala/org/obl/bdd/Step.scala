@@ -48,12 +48,12 @@ case class Assertion[S, E](source: Source[S], expectations: Seq[Expectation[S, E
 
 case class Expectation[S, E](description: Description, predicate: S => Seq[TestResult[E]]) {
 
-  private def add(other: Expectation[S, E], conj:Conjuction) = Expectation[S, E](description.add(other.description.prepend(conj)), state => {
+  private def add(other: Expectation[S, E], conj: Conjuction) = Expectation[S, E](description.add(other.description.prepend(conj)), state => {
     predicate(state) ++ other.predicate(state)
   })
 
   def And(other: Expectation[S, E]) = add(other, Conjuction.And)
-  def - (other: Expectation[S, E]) = add(other, Conjuction.-)
+  def -(other: Expectation[S, E]) = add(other, Conjuction.-)
 
   override def toString = description.mkString("")
 }

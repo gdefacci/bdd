@@ -58,28 +58,31 @@ object CalculatorFeature extends Feature[CalculatorTestState, String](
 
 class DummyCalculatorService extends CalculatorService {
 
-  def normalizeTokens(arr: Seq[String]) = arr.map(_.trim).filter(_.nonEmpty).toList
+  private def normalizeTokens(arr: Seq[String]) = arr.map(_.trim).filter(_.nonEmpty).toList
 
-  def parse(str: String) = {
-    val rgOps = """[\+\-\*\/]"""
+  private case class Op(symbol: String, f: (Int, Int) => Int)
+  private object Sum extends Op("+", _ + _)
+  private object Sub extends Op("-", _ - _)
+  private object Mul extends Op("*", _ * _)
+  private object Div extends Op("/", _ / _)
+
+  private val ops = Seq(Sum, Sub, Mul, Div)
+
+  private def toOp(sym: String): Op = ops.find(_.symbol == sym).getOrElse(throw new RuntimeException("invalid operator " + sym))
+
+  private def parse(str: String) = {
+    val rgOps = "[" + ops.map(op => s"\\${op.symbol}").mkString + "]"
     val rgNum = """\d+"""
-    normalizeTokens(str.split(rgOps)).map(_.toInt) -> normalizeTokens(str.split(rgNum))
+    normalizeTokens(str.split(rgOps)).map(_.toInt) -> normalizeTokens(str.split(rgNum)).map(toOp)
   }
 
-  def doOp(a: Int, b: Int, str: String): Int = str match {
-    case "*" => a * b
-    case "/" => a / b
-    case "+" => a + b
-    case "-" => a - b
-  }
-
-  def subst(nums: Seq[Int], ops: Seq[String], opSet: Set[String]) = {
-    val z: (List[Int], List[String]) = List(nums.head) -> Nil
+  private def subst(nums: Seq[Int], ops: Seq[Op], opSet: Set[Op]) = {
+    val z: (List[Int], List[Op]) = List(nums.head) -> Nil
     nums.tail.zip(ops).foldLeft(z) { (lst, itm) =>
       val (nums, ops) = lst
       val (num, op) = itm
       if (opSet.contains(op)) {
-        (nums.init :+ doOp(nums.last, num, op)) -> ops
+        (nums.init :+ op.f(nums.last, num)) -> ops
       } else {
         (nums :+ num) -> (ops :+ op)
       }
@@ -88,8 +91,8 @@ class DummyCalculatorService extends CalculatorService {
 
   def calculate(str: String) = {
     val (nums, ops) = parse(str)
-    val (nums1, ops1) = subst(nums, ops, Set("/", "*"))
-    val (nums2, ops2) = subst(nums1, ops1, Set("+", "-"))
+    val (nums1, ops1) = subst(nums, ops, Set(Div, Mul))
+    val (nums2, ops2) = subst(nums1, ops1, Set(Sum, Sub))
     assert(ops2.isEmpty)
     assert(nums2.length == 1)
     nums2.head

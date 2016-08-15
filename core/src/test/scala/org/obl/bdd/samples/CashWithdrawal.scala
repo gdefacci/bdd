@@ -20,24 +20,24 @@ case class CashWithdrawalService(private var deposited: Int = 0) {
   }
 }
 
-case class CashWithdrawalTestState(service: CashWithdrawalService, requested: Int)
+case class CashWithdrawalTestState(service: CashWithdrawalService, dispensed: Option[Int])
 
 trait CashWithdrawalSteps extends BDD[CashWithdrawalTestState, String] {
 
   def `Given i have deposited in my account`(amount: Int): Source = source { () =>
     val service = new CashWithdrawalService()
     service.deposit(amount)
-    CashWithdrawalTestState(service, 0)
+    CashWithdrawalTestState(service, None)
   }
 
   def `i request`(amount: Int): Step = step { state =>
-    state.copy(requested = amount)
+    val dispensed = state.service.dispense(amount)
+    state.copy(dispensed = Some(dispensed))
   }
 
   def `should be dispensed`(amount: Int): Expectation = expectation { state =>
-    val dispensed = state.service.dispense(state.requested)
-    if (dispensed == amount) Ok
-    else Fail(s"expecting dispensed $amount but was $dispensed")
+    if (state.dispensed.get == amount) Ok
+    else Fail(s"expecting dispensed $amount but was ${state.dispensed.get}")
   }
 
 }
@@ -58,7 +58,7 @@ object CashWithdrawal extends Feature(
     `Given i have deposited in my account`(10)
       When `i request`(20)
       Then `should be dispensed`(15)),
-  Scenario("Successful withdrawal from an account in debit using +",
+  Scenario("Successful withdrawal from an account in debit using -",
     `Given i have deposited in my account`(10)
       - `i request`(20)
       - `should be dispensed`(10)),
