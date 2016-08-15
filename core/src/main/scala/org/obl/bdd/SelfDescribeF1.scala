@@ -12,3 +12,4 @@ object SelfDescribeF1 {
   def selfDescribe[A,B](f:A => B):A => B = macro StepMacro.selfDescribe[A,B]
   
 }
+

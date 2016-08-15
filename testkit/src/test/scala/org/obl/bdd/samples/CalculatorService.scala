@@ -55,6 +55,12 @@ object CalculatorFeature extends Feature[CalculatorTestState, String](
       When `the calculator is run`
       Then `the result given by calculator is`( `equal to`(6) )),
 
+  Scenario("Add 3 numbers",
+
+    `given the input`("2+2+4")
+      When `the calculator is run`
+      Then `the result given by calculator is`( `equal to`(6) or (`greater than`(8) but `less than`(10))  )),
+    
   OutlineScenario(
     "Some expressions",
 

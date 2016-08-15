@@ -8,30 +8,37 @@ object StepMacro {
     import c.universe._
     q"${sym.asTerm.name}"
   }
+  
+  def getParamsAndPrefix(c:Context):(List[c.universe.Symbol], String) = {
+    import c.universe._
+
+    val firstParams = c.internal.enclosingOwner.asMethod.paramLists.headOption.getOrElse(Nil)
+    val params = if (firstParams.exists(_.isImplicit)) Nil else firstParams
+    
+    val desc = c.internal.enclosingOwner.name.decodedName.toString
+
+    params -> desc
+  }
 
   private def newDescriptionAndParameterType(c: Context)(typ: c.Tree, f: c.Tree) = {
     import c.universe._
 
-    val params = c.internal.enclosingOwner.asMethod.paramLists
-
-    val desc = c.internal.enclosingOwner.name.decodedName.toString
-
+    val (params, desc) = getParamsAndPrefix(c)
+    
     implicit val symLiftable = symbolLiftable(c)
 
-    if (params.exists(_.nonEmpty)) q"""new $typ(org.obl.bdd.Text(None, $desc+" "+List(...$params).mkString(", ")), $f)"""
+    if (params.nonEmpty) q"""new $typ(org.obl.bdd.Text(None, $desc+" "+List(..$params).mkString(", ")), $f)"""
     else q"""new $typ(org.obl.bdd.Text(None, $desc), $f)"""
   }
   
   private def newSelfDescribeLike(c: Context)(typ: c.Tree, f: c.Tree) = {
     import c.universe._
 
-    val params = c.internal.enclosingOwner.asMethod.paramLists
-
-    val desc = c.internal.enclosingOwner.name.decodedName.toString
+    val (params, desc) = getParamsAndPrefix(c)
 
     implicit val symLiftable = symbolLiftable(c)
 
-    if (params.exists(_.nonEmpty)) q"""new $typ($desc+" "+List(...$params).mkString(", "), $f)"""
+    if (params.nonEmpty) q"""new $typ($desc+" "+List(..$params).mkString(", "), $f)"""
     else q"""new $typ($desc, $f)"""
   }
 
@@ -69,5 +76,12 @@ object StepMacro {
     newSelfDescribeLike(c)(tq"org.obl.bdd.SelfDescribeF1[$ta, $tb]", f.tree)
   }
 
+ def predicate[A: c.WeakTypeTag](c: Context)(f: c.Expr[A => Boolean]): c.Tree = {
+    import c.universe._
+
+    val ta = c.weakTypeOf[A]
+
+    newDescriptionAndParameterType(c)(tq"org.obl.bdd.Predicate[$ta]", f.tree)
+  }
 
 }

@@ -40,5 +40,7 @@ object Conjuction {
   object Then extends Conjuction("then")
   object When extends Conjuction("when")
   object - extends Conjuction("-")
+
+  object Or extends Conjuction("or")
   
 }
