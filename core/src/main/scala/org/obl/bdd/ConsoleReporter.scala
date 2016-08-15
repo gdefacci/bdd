@@ -7,7 +7,6 @@ class ConsoleReporter(writer: PrintWriter, featureRunner:FeatureRunner) {
   private def subjectDescription[S, E](subj: EventSubject[S, E]) = subj match {
     case SourceSubject(i) => s"""The step "$i""""
     case StepSubject(i) => s"""The step "$i""""
-    case ActionSubject(i) => s"""The action "$i""""
     case ExpectationSubject(i) => s"""The expectation "$i""""
   }
 

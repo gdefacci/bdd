@@ -15,7 +15,7 @@ trait CalculatorServiceSteps extends App with BDD[CalculatorTestState, String] {
     CalculatorTestState(createCalculatorService, input, None)
   }
 
-  def `the calculator is run`: Action = action { state =>
+  def `the calculator is run`: Step = step { state =>
     state.copy(result = Some(state.calculatorService.calculate(state.input)))
   }
 

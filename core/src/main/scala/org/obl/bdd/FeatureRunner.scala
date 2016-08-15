@@ -59,15 +59,6 @@ object DefaultScenarioRunner extends ScenarioRunner {
     }
   }
   
-  private def actionEvents[S, E](action: Action[S], input: => S): EventsOutCome[S, E, S] = {
-    val subj = ActionSubject[S,E](action)
-    val start = StartEvent(subj, System.currentTimeMillis)
-    Try(action.run(input)) match {
-      case Success(result) => Right(result -> (start :: SuccessEvent(subj, result, System.currentTimeMillis) :: Nil))
-      case Failure(err) => Left(start :: ActionError(subj, input, System.currentTimeMillis, err) :: Nil)
-    }
-  }
-  
   def run[S, E](scenario:Scenario[S, E]): Seq[ScenarioRunEvent[S, E]] = {
     val assertion = scenario.assertion
     (sourceEvents[S,E](assertion.source).right.flatMap {
@@ -81,11 +72,6 @@ object DefaultScenarioRunner extends ScenarioRunner {
               })
           }
         }
-    }.right.flatMap {
-      case (input, evs) => 
-        actionEvents[S,E](assertion.action, input).fold( errs => Left(errs ++ evs), {
-          case (out, evs1) => Right((out -> (evs ++ evs1)))
-        })
     }.right.map {
       case (input, events) =>
         events ++ assertion.expectations.flatMap { expectation =>

@@ -10,18 +10,22 @@ case class Source[S](description: Description, initialValue: () => S, steps: Seq
   def but(step: Step[S]): Source[S] = add(step, Conjuction.But)
   def when(step: Step[S]): Source[S] = add(step, Conjuction.When)
   def and(step: Step[S]): Source[S] = add(step, Conjuction.And)
+  
+  def Then(step: Step[S]) = add(step, Conjuction.Then)
+  def `then`(step: Step[S]) = add(step, Conjuction.Then)
+
   def +(step: Step[S]): Source[S] = add(step, Conjuction.+)
 
   private def add(step: Step[S], conj: Conjuction): Source[S] =
     Source(description.append(conj).add(step.description), initialValue, steps :+ step)
 
-  private def add(action: Action[S], conj: Conjuction): AssertionFactory[S] =
-    AssertionFactory[S](copy(description = description.append(conj)), action)
+  private def add[E](expect: Expectation[S, E], conj: Conjuction) =
+    new Assertion[S, E](this.copy( description = description.append(conj)), expect :: Nil)
 
-  def when(action: Action[S]) = add(action, Conjuction.When)
-  def Then(action: Action[S]) = add(action, Conjuction.Then)
-  def `then`(action: Action[S]) = add(action, Conjuction.Then)
-  def +(action: Action[S]) = add(action, Conjuction.+)
+  def and[E](expect: Expectation[S, E]) = add(expect, Conjuction.And)
+  def Then[E](expect: Expectation[S, E]) = add(expect, Conjuction.Then)
+  def `then`[E](expect: Expectation[S, E]) = add(expect, Conjuction.Then)
+  def +[E](expect: Expectation[S, E]) = add(expect, Conjuction.+)
 
   override def toString = description.mkString("")
 }
@@ -32,37 +36,16 @@ case class Step[S](description: Description, run: S => S) {
 
 }
 
-case class Action[S](description: Text, run: S => S) {
+case class AssertionDescription(source: Description, expectations: Description) {
 
-  override def toString = description.value
-
-  def append(suffix: Conjuction): Action[S] =
-    Action(description.append(suffix), run)
-
+  override def toString = source.mkString("\n") + "\n" + expectations.mkString("\n")
 }
 
-case class AssertionFactory[S](source: Source[S], action: Action[S]) {
+case class Assertion[S, E](source: Source[S], expectations: Seq[Expectation[S, E]]) {
 
-  private def add[E](expect: Expectation[S, E], sep: Conjuction) =
-    new Assertion[S, E](source, action.append(sep), expect :: Nil)
+  def and(expect: Expectation[S, E]): Assertion[S, E] = Assertion[S, E](source, expectations :+ expect)
 
-  def and[E](expect: Expectation[S, E]) = add(expect, Conjuction.And)
-  def Then[E](expect: Expectation[S, E]) = add(expect, Conjuction.Then)
-  def `then`[E](expect: Expectation[S, E]) = add(expect, Conjuction.Then)
-  def +[E](expect: Expectation[S, E]) = add(expect, Conjuction.+)
-
-}
-
-case class AssertionDescription(source: Description, action: Text, expectations: Description) {
-
-  override def toString = source.add(action).mkString("\n") + "\n" + expectations.mkString("\n")
-}
-
-case class Assertion[S, E](source: Source[S], action: Action[S], expectations: Seq[Expectation[S, E]]) {
-
-  def and(expect: Expectation[S, E]): Assertion[S, E] = Assertion[S, E](source, action, expectations :+ expect)
-
-  def description = AssertionDescription(source.description, action.description, Descriptions(expectations.map(_.description)))
+  def description = AssertionDescription(source.description, Descriptions(expectations.map(_.description)))
 
   override def toString = description.toString
 }

@@ -6,7 +6,7 @@ import org.scalatest.FunSuite
 class StepsTest extends FunSuite {
   
   test("Step description 1") {
-    val src = Source(Text("a"), () => "aa") and Step(Text("b"), a => "bb"+a)
+    val src = Source(Text("a"), () => "aa") and Step[String](Text("b"), a => "bb"+a)
     
     assert(src.description.mkString("-") == "a and-b")
     
@@ -17,11 +17,10 @@ class StepsTest extends FunSuite {
   }
   
   test("Step description 2") {
-    val src = Source(Text("a"), () => "aa") and Step(Text("b"), a => "bb"+a) Then Action[String](Text("c"), a => "bb"+a) and
+    val src = Source(Text("a"), () => "aa") and Step[String](Text("b"), a => "bb"+a) Then Step[String](Text("c"), a => "bb"+a) and
                     Expectation[String,String](Text("e"), s => Ok :: Nil)
     
-    assert(src.description.source.mkString("-") == "a and-b then")
-    assert(src.description.action.mkString("-") == "c and")
+    assert(src.description.source.mkString("-") == "a and-b then-c and")
     assert(src.description.expectations.mkString("-") == "e")
   }
   

@@ -30,7 +30,7 @@ trait CashWithdrawalSteps extends BDD[CashWithdrawalTestState,String] {
     CashWithdrawalTestState(service, 0)
   } 
   
-  def `i request`(amount:Int):Action = action { state =>
+  def `i request`(amount:Int):Step = step { state =>
     state.copy(requested = amount)
   } 
   
@@ -56,14 +56,14 @@ object CashWithdrawal extends Feature(
     `should be dispensed`(20)
   ),
   Scenario("Successful withdrawal from an account in debit",
-    `Given i have deposited in my account`(10) when
-    `i request`(20) Then
-    `should be dispensed`(15)
+    `Given i have deposited in my account`(10) 
+     when `i request`(20) 
+     Then `should be dispensed`(15)
   ),
   Scenario("Successful withdrawal from an account in debit using +",
-    `Given i have deposited in my account`(10) +
-    `i request`(20) +
-    `should be dispensed`(10)
+    `Given i have deposited in my account`(10) 
+    + `i request`(20) 
+    + `should be dispensed`(10)
   ),
   OutlineScenario("Few withdrawal",
       

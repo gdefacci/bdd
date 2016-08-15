@@ -10,8 +10,8 @@ class DefaultScenarioRunnerTest extends FunSuite {
   test("ok") {
     
     val assertion = Source(Text("aa"), () => "str") and 
-                    Step(Text("b"), a => "bb"+a) Then 
-                    Action(Text("c"), a => "cc"+a) and
+                    Step[String](Text("b"), a => "bb"+a) Then 
+                    Step[String](Text("c"), a => "cc"+a) and
                     Expectation[String,String](Text("c"), s => Ok :: Nil)
     val scenario = Scenario("scen1", assertion)
     
@@ -26,8 +26,8 @@ class DefaultScenarioRunnerTest extends FunSuite {
   test("expectation failure") {
     
     val assertion = Source(Text("aa"), () => "str") and 
-                    Step(Text("b"), a => "bb"+a) Then 
-                    Action(Text("c"), a => "cc"+a) and
+                    Step[String](Text("b"), a => "bb"+a) Then 
+                    Step[String](Text("c"), a => "cc"+a) and
                     Expectation[String,String](Text("c"), s => Fail("fail") :: Nil)
     val scenario = Scenario("scen1", assertion)
     
@@ -43,8 +43,8 @@ class DefaultScenarioRunnerTest extends FunSuite {
   test("source fails") {
     
     val assertion = Source[String](Text("aa"), () => fail("source")) and 
-                    Step(Text("b"), a => "bb"+a) Then 
-                    Action(Text("c"), a => "cc"+a) and
+                    Step[String](Text("b"), a => "bb"+a) Then 
+                    Step[String](Text("c"), a => "cc"+a) and
                     Expectation[String,String](Text("c"), s => Ok :: Nil)
     val scenario = Scenario("scen1", assertion)
     
@@ -60,8 +60,8 @@ class DefaultScenarioRunnerTest extends FunSuite {
   test("step fails") {
     
     val assertion = Source(Text("aa"), () => "str") and 
-                    Step(Text("b"), a => fail("step")) Then 
-                    Action(Text("c"), a => "cc"+a) and
+                    Step[String](Text("b"), a => fail("step")) Then 
+                    Step[String](Text("c"), a => "cc"+a) and
                     Expectation[String,String](Text("c"), s => Ok :: Nil)
     val scenario = Scenario("scen1", assertion)
     
@@ -74,28 +74,12 @@ class DefaultScenarioRunnerTest extends FunSuite {
     
   }
   
-  test("action fails") {
-    
-    val assertion = Source(Text("aa"), () => "str") and 
-                    Step(Text("b"), a => "bb"+a) Then 
-                    Action(Text("c"), a => fail("action")) and
-                    Expectation[String,String](Text("c"), s => Ok :: Nil)
-    val scenario = Scenario("scen1", assertion)
-    
-    val evs = DefaultScenarioRunner.run(scenario)
-    
-    assert(evs.distinct.length == evs.length)
-    assert((evs.collect { case ev:StartEvent[_,_] => ev }).size == 3)
-    assert((evs.collect { case ev:SuccessEvent[_,_] => ev }).size == 2)
-    assert((evs.collect { case ev:ActionError[_,_] => ev }).size == 1)
-    
-  }
 
   test("expectation fails") {
     
     val assertion = Source(Text("aa"), () => "str") and 
-                    Step(Text("b"), a => "bb"+a) Then 
-                    Action(Text("c"), a => "cc"+a) and
+                    Step[String](Text("b"), a => "bb"+a) Then 
+                    Step[String](Text("c"), a => "cc"+a) and
                     Expectation[String,String](Text("c"), s => fail("expectation"))
     val scenario = Scenario("scen1", assertion)
     

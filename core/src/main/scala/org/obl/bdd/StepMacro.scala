@@ -30,14 +30,6 @@ object StepMacro {
     newDescriptionAndParameterType(c)(tq"org.obl.bdd.Step[$ta]", f.tree)
   }
   
-  def action[A : c.WeakTypeTag](c:Context)(f:c.Expr[A => A]):c.Tree = {
-    import c.universe._
-    
-    val ta = c.weakTypeOf[A]
-
-    newDescriptionAndParameterType(c)(tq"org.obl.bdd.Action[$ta]", f.tree)
-  }
-  
   def source[A : c.WeakTypeTag](c:Context)(f:c.Expr[() => A]):c.Tree = {
     import c.universe._
     
