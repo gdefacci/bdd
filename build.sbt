@@ -11,13 +11,22 @@ lazy val core = Project(
   "core",
   file("core"),
   settings = Seq(
-    runFeatures := {
-        (runMain in Test).fullInput(" org.obl.bdd.samples.TestRunMain").evaluated
-    },
     libraryDependencies <+= (scalaVersion)(sv => "org.scala-lang" % "scala-compiler" % sv),
     libraryDependencies += scalatest % "test"
   )
 )
+
+lazy val testkit = Project(
+  "testkit",
+  file("testkit"),
+  settings = Seq(
+    runFeatures := {
+        (runMain in Test).fullInput(" org.obl.bdd.samples.TestRunMain").evaluated
+    },
+    libraryDependencies += scalatest % "test"
+  )
+).dependsOn(core)
+
 
 // lazy val bddTestInterface = Project(
 //   "bdd-sbt-test-interface",
@@ -28,7 +37,7 @@ lazy val core = Project(
 // ).dependsOn(core)
 
 lazy val root = (project in file(".")).
-  aggregate(core).
+  aggregate(core, testkit).
   settings(
     publishArtifact := false
   )

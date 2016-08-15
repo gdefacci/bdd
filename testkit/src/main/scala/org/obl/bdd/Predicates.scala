@@ -8,4 +8,8 @@ object Predicates {
     i == inp
   }
   
+  def `not equal to`[A](i:A):A => Boolean = selfDescribe { inp =>
+    i != inp
+  }
+  
 }
