@@ -8,7 +8,7 @@ class DescriptionTest extends FunSuite {
   test("append") {
     val sample1 = Descriptions(Text("aa") :: Descriptions(Text("bb") :: Text("cc") :: Nil) :: Nil)
     
-    assert(Descriptions(Text("aa") :: Descriptions(Text("bb") :: Text("cc",Some(Conjuction.And)) :: Nil) :: Nil) == sample1.append(Conjuction.And))
+    assert(Descriptions(Text(Some(Conjuction.And), "aa") :: Descriptions(Text("bb") :: Text("cc") :: Nil) :: Nil) == sample1.prepend(Conjuction.And))
   }
 
   test("mkString") {

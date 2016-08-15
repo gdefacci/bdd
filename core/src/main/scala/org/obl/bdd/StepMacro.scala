@@ -18,8 +18,8 @@ object StepMacro {
     
     implicit val symLiftable = symbolLiftable(c)
     
-    if (params.exists(_.nonEmpty)) q"""new $typ(org.obl.bdd.Text($desc+" "+List(...$params).mkString(", ")), $f)"""
-    else q"""new $typ(org.obl.bdd.Text($desc), $f)"""
+    if (params.exists(_.nonEmpty)) q"""new $typ(org.obl.bdd.Text(None, $desc+" "+List(...$params).mkString(", ")), $f)"""
+    else q"""new $typ(org.obl.bdd.Text(None, $desc), $f)"""
   }
   
   def step[A : c.WeakTypeTag](c:Context)(f:c.Expr[A => A]):c.Tree = {
