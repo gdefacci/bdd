@@ -10,7 +10,7 @@ class ConsoleReporter(writer: PrintWriter, featureRunner: FeatureRunner) {
     case ExpectationSubject(i) => s"""The expectation "$i""""
   }
 
-  private def errordescription[S, E](err: ErrorEvent[S, E]) = {
+  private def errorDescription[S, E](err: ErrorEvent[S, E]) = {
     err match {
       case ev @ ExceptionEvent(subj, err) =>
         s"${subjectDescription(subj)}${ExceptionEvent.getInput(ev).map(i => s" with state $i ").getOrElse("")}caused error ${err.getMessage}"
@@ -21,9 +21,8 @@ class ConsoleReporter(writer: PrintWriter, featureRunner: FeatureRunner) {
 
   private val lineSep = "-" * 120
 
-  def report[S, E](feature: Feature[S, E]) = {
-    val testInfos: TestInfos[S, E] = new TestInfos(featureRunner.run(feature))
-    testInfos.scenarioOutcomes.map {
+  private def report[S, E](scenarioOutcomes: Seq[(Feature[S, E], Seq[ScenarioOutcome[S, E]])]) = {
+    scenarioOutcomes.foreach {
       case (feature, scenarios) =>
 
         val title = s"Feature  : ${feature.title}"
@@ -34,7 +33,7 @@ class ConsoleReporter(writer: PrintWriter, featureRunner: FeatureRunner) {
         }
         writer.println("=" * title.length + "\n")
 
-        scenarios.map {
+        scenarios.foreach {
           case SuccessfullScenario(scenario, elapsed) =>
             writer.println(s"  - ${scenario.title}  completed  sucessfully ($elapsed millis)")
           case FailedScenario(scenario, errs) =>
@@ -42,15 +41,18 @@ class ConsoleReporter(writer: PrintWriter, featureRunner: FeatureRunner) {
             writer.println(s"Error !!!\n")
             writer.println(s"${scenario.toString}\n")
             errs.foreach { err =>
-              writer.println(errordescription(err))
+              writer.println(errorDescription(err))
             }
             writer.println(lineSep)
         }
     }
     writer.flush()
   }
+  
+  def runFeature[S, E](feature: Feature[S, E]):Unit = 
+    report(new TestInfos(featureRunner.run(feature)).scenarioOutcomes)
 
-  def report(infos: Seq[Feature[_, _]]): Unit =
-    infos.foreach(report(_))
+  def runFeatures(infos: Seq[Feature[_, _]]): Unit =
+    infos.foreach(runFeature(_))
 
 }

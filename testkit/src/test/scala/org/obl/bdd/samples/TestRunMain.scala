@@ -9,6 +9,6 @@ object TestRunMain extends App {
 
   val featureRunner = FeatureRunner(DefaultScenarioRunner)
 
-  new ConsoleReporter(new PrintWriter(System.out), featureRunner).report(features)
+  new ConsoleReporter(new PrintWriter(System.out), featureRunner).runFeatures(features)
 
 }

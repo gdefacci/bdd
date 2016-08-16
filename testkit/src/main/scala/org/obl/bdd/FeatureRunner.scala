@@ -61,7 +61,7 @@ object DefaultScenarioRunner extends ScenarioRunner {
 
   def run[S, E](scenario: Scenario[S, E]): Seq[ScenarioRunEvent[S, E]] = {
     val assertion = scenario.assertion
-    (sourceEvents[S, E](assertion.source).right.flatMap {
+    sourceEvents[S, E](assertion.source).right.flatMap {
       case (src, events) =>
         val z: EventsOutCome[S, E, S] = Right(src -> events)
         assertion.source.steps.foldLeft(z) { (acc, step) =>
@@ -77,7 +77,7 @@ object DefaultScenarioRunner extends ScenarioRunner {
         events ++ assertion.expectations.flatMap { expectation =>
           expectationEvents[S, E](expectation, input)
         }
-    }).fold(identity, identity)
+    }.fold(identity, identity)
   }
 
 }
