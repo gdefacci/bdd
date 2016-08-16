@@ -44,4 +44,23 @@ class MacrosTest extends FunSuite {
     assert(predicate.description == Text("predicate"))
   }
 
+   test("Scenario description") {
+    
+    val scenario = Scenario.scenario[Int,Int]( new Assertion[Int,Int](new Source[Int](Text(""), () => 12), Nil ) )
+   
+    assert(scenario.title == "scenario")
+  }
+   
+  test("Scenario description 1") {
+    
+    val scenario = {
+      val i = 12
+      Scenario.scenario[Int,Int]( new Assertion[Int,Int](new Source[Int](Text(""), () => i), Nil ) )
+    }
+   
+    assert(scenario.title == "scenario")
+  }
+   
+   
+ 
 }

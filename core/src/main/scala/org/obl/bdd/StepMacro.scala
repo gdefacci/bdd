@@ -70,6 +70,15 @@ object StepMacro {
 
     newSelfDescribeLike(c)(tq"org.obl.bdd.SelfDescribeF1[$ta, $tb]", f.tree)
   }
+  
+  def scenario[S: c.WeakTypeTag, E: c.WeakTypeTag](c: Context)(f: c.Expr[Assertion[S, E]]): c.Tree = {
+    import c.universe._
+
+    val ta = c.weakTypeOf[S]
+    val tb = c.weakTypeOf[E]
+
+    newSelfDescribeLike(c)(tq"org.obl.bdd.Scenario[$ta, $tb]", f.tree)
+  }
 
   def predicate[A: c.WeakTypeTag](c: Context)(f: c.Expr[A => Boolean]): c.Tree = {
     import c.universe._

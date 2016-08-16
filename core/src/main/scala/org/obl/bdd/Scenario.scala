@@ -1,9 +1,17 @@
 package org.obl.bdd
 
+import language.experimental.macros
+
 sealed trait ScenarioLike[S, E]
 
 case class Scenario[S, E](title: String, assertion: Assertion[S, E]) extends ScenarioLike[S, E] {
   override def toString = title + "\n\n" + assertion.toString()
+}
+
+object Scenario {
+  
+  def scenario[S,E](f: Assertion[S, E]): Scenario[S,E] = macro StepMacro.scenario[S, E]
+
 }
 
 case class OutlineScenario[I, S, E](title: String, table: Seq[I], f: I => Scenario[S, E]) extends ScenarioLike[S, E] {
