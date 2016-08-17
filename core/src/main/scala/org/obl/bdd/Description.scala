@@ -41,6 +41,10 @@ object Conjuction {
   object When extends Conjuction("when")
   object - extends Conjuction("-")
 
+  /**
+   * Predicate Conjunctions
+   */
   object Or extends Conjuction("or")
+  object Not extends Conjuction("not")
   
 }

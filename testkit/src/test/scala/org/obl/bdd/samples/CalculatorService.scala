@@ -3,8 +3,6 @@ package samples
 
 import Predicates._
 
-import SelfDescribeF1._
-
 trait CalculatorService {
   def calculate(str: String): Int
 }

@@ -24,4 +24,12 @@ class StepsTest extends FunSuite {
     assert(src.description.expectations.mkString("-") == "and e")
   }
 
+  test("Step description 3") {
+    val src = Source(Text("a"), () => "aa") And
+      Expectation[String, String](Text("e"), s => Ok :: Nil) But Expectation[String, String](Text("b"), s => Ok :: Nil) 
+
+    assert(src.description.source.mkString("-") == "a")
+    assert(src.description.expectations.mkString("-") == "and e-but b")
+  }
+
 }

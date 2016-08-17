@@ -1,7 +1,5 @@
 package org.obl.bdd
 
-import Predicate._
-
 object Predicates {
   
   def `equal to`[A](value:A):Predicate[A] = predicate { inp =>

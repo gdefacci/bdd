@@ -1,7 +1,5 @@
 package org.obl.bdd
 
-import language.experimental.macros
-
 class Predicate[A](val description:Description, predicate:A => Boolean) extends (A => Boolean) {
   
   def apply(a:A):Boolean = predicate(a)
@@ -15,11 +13,6 @@ class Predicate[A](val description:Description, predicate:A => Boolean) extends 
   
   def or(predicate:Predicate[A]) =
     new Predicate[A](description.add(predicate.description.prepend(Conjuction.Or)), a => apply(a) || predicate(a))
-  
-}
 
-object Predicate {
-  
-  def predicate[A](f:A => Boolean):Predicate[A] = macro StepMacro.predicate[A]
-  
+  def not = new Predicate[A](description.prepend(Conjuction.Not), a => !apply(a))
 }

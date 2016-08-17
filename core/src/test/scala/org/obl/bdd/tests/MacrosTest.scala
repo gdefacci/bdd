@@ -32,16 +32,16 @@ class MacrosTest extends FunSuite {
   
   test("SelfDescribeF1 description") {
     
-    val f1 = SelfDescribeF1.selfDescribe[Int,Int]( i => i )
+    val f1 = selfDescribe[Int,Int]( i => i )
    
     assert(f1.toString == "f1")
   }
   
   test("Predicate description") {
     
-    val predicate = Predicate.predicate[Int]( i => true )
+    val pred = predicate[Int]( i => true )
    
-    assert(predicate.description == Text("predicate"))
+    assert(pred.description == Text("pred"))
   }
 
    test("Scenario description") {
