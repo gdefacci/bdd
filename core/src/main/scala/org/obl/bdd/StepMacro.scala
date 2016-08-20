@@ -1,20 +1,20 @@
 package org.obl.bdd
 
-import scala.reflect.macros.blackbox.Context
+import scala.language.experimental.macros
+import scala.reflect.macros.blackbox
 
-object StepMacro {
+@macrocompat.bundle
+class StepMacro(val c: blackbox.Context) {
 
-  def filePosition(c:Context):c.Tree = {
-    import c.universe._
+  import c.universe._
 
+  private def filePosition: Tree = {
     val line = c.enclosingPosition.line
     val path = c.enclosingPosition.source.file.path
     q"new org.obl.bdd.FilePosition($path, $line)"
   }
-  
-  def ownerDescription(c: Context): c.Tree = {
-    import c.universe._
 
+  private def ownerDescription: Tree = {
     val enclosingOwner = c.internal.enclosingOwner
     val params = if (enclosingOwner.isMethod) {
       val firstParams = enclosingOwner.asMethod.paramLists.headOption.getOrElse(Nil)
@@ -23,97 +23,70 @@ object StepMacro {
 
     val desc = enclosingOwner.name.decodedName.toString
 
-    implicit val symbolLiftable = c.universe.Liftable[c.Symbol] { sym =>
-      import c.universe._
-      q"${sym.asTerm.name}"
-    }
-
-    if (params.nonEmpty) q"""$desc+" "+List(..$params).mkString(", ")"""
+    if (params.nonEmpty) q"""$desc+" "+List(..${params.map(_.asTerm.name)}).mkString(", ")"""
     else q"$desc"
   }
 
-  private def newDescriptionAndParameterType(c: Context)(typ: c.Tree, f: c.Tree) = {
-    import c.universe._
-
-    val desc = ownerDescription(c)
-    val fpos = filePosition(c)
+  private def newDescriptionAndParameterType(typ: Tree, f: Tree): Tree = {
+    val desc = ownerDescription
+    val fpos = filePosition
     q"""new $typ(org.obl.bdd.Text(None, $desc), $f, Some($fpos))"""
   }
 
-  private def newSelfDescribeLike(c: Context)(typ: c.Tree, f: c.Tree) = {
-    import c.universe._
-
-    val desc = ownerDescription(c)
-    val fpos = filePosition(c)
-    q"""new $typ($desc, $f, Some($fpos))"""
-  }
-  
-  private def newSelfDescribeLikeDescriptionProvided(c: Context)(typ: c.Tree, desc:c.Tree, f: c.Tree) = {
-    import c.universe._
-
-    val fpos = filePosition(c)
+  private def newSelfDescribeLike(typ: Tree, f: Tree): Tree = {
+    val desc = ownerDescription
+    val fpos = filePosition
     q"""new $typ($desc, $f, Some($fpos))"""
   }
 
-
-  def step[A: c.WeakTypeTag](c: Context)(f: c.Tree): c.Tree = {
-    import c.universe._
-    
-    val ta = c.weakTypeOf[A]
-    newDescriptionAndParameterType(c)(tq"org.obl.bdd.Step[$ta]", f)
+  private def newSelfDescribeLikeDescriptionProvided(typ: Tree, desc: Tree, f: Tree): Tree = {
+    val fpos = filePosition
+    q"""new $typ($desc, $f, Some($fpos))"""
   }
 
-  def source[A: c.WeakTypeTag](c: Context)(f: c.Tree): c.Tree = {
-    import c.universe._
-
+  def step[A: c.WeakTypeTag](f: Tree): Tree = {
     val ta = c.weakTypeOf[A]
-
-    newDescriptionAndParameterType(c)(tq"org.obl.bdd.Source[$ta]", f)
+    newDescriptionAndParameterType(tq"org.obl.bdd.Step[$ta]", f)
   }
 
-  def expectation[A: c.WeakTypeTag, E: c.WeakTypeTag](c: Context)(f: c.Tree): c.Tree = {
-    import c.universe._
+  def source[A: c.WeakTypeTag](f: Tree): Tree = {
+    val ta = c.weakTypeOf[A]
 
+    newDescriptionAndParameterType(tq"org.obl.bdd.Source[$ta]", f)
+  }
+
+  def expectation[A: c.WeakTypeTag, E: c.WeakTypeTag](f: Tree): Tree = {
     val ta = c.weakTypeOf[A]
     val te = c.weakTypeOf[E]
 
-    newDescriptionAndParameterType(c)(tq"org.obl.bdd.Expectation[$ta,$te]", q"{ (state:$ta) => Seq($f(state)) }")
+    newDescriptionAndParameterType(tq"org.obl.bdd.Expectation[$ta,$te]", q"{ (state:$ta) => Seq($f(state)) }")
   }
 
-  def selfDescribe[A: c.WeakTypeTag, B: c.WeakTypeTag](c: Context)(f: c.Tree): c.Tree = {
-    import c.universe._
-
+  def selfDescribe[A: c.WeakTypeTag, B: c.WeakTypeTag](f: Tree): Tree = {
     val ta = c.weakTypeOf[A]
     val tb = c.weakTypeOf[B]
 
-    newSelfDescribeLike(c)(tq"org.obl.bdd.SelfDescribeF1[$ta, $tb]", f)
+    newSelfDescribeLike(tq"org.obl.bdd.SelfDescribeF1[$ta, $tb]", f)
   }
-  
-  def scenario[S: c.WeakTypeTag, E: c.WeakTypeTag](c: Context)(f: c.Tree): c.Tree = {
-    import c.universe._
 
+  def scenario[S: c.WeakTypeTag, E: c.WeakTypeTag](f: Tree): Tree = {
     val ta = c.weakTypeOf[S]
     val tb = c.weakTypeOf[E]
 
-    newSelfDescribeLike(c)(tq"org.obl.bdd.Scenario[$ta, $tb]", f)
+    newSelfDescribeLike(tq"org.obl.bdd.Scenario[$ta, $tb]", f)
   }
-  
-  def scenarioDescriptionProvided[S: c.WeakTypeTag, E: c.WeakTypeTag](c: Context)(description:c.Tree, f: c.Tree): c.Tree = {
-    import c.universe._
 
+  def scenarioDescriptionProvided[S: c.WeakTypeTag, E: c.WeakTypeTag](description: Tree, f: Tree): Tree = {
     val ta = c.weakTypeOf[S]
     val tb = c.weakTypeOf[E]
 
-    newSelfDescribeLikeDescriptionProvided(c)(tq"org.obl.bdd.Scenario[$ta, $tb]", description, f)
+    newSelfDescribeLikeDescriptionProvided(tq"org.obl.bdd.Scenario[$ta, $tb]", description, f)
   }
-  
-  
-  def predicate[A: c.WeakTypeTag](c: Context)(f: c.Tree): c.Tree = {
-    import c.universe._
 
+  def predicate[A: c.WeakTypeTag](f: Tree): Tree = {
     val ta = c.weakTypeOf[A]
 
-    newDescriptionAndParameterType(c)(tq"org.obl.bdd.Predicate[$ta]", f)
+    newDescriptionAndParameterType(tq"org.obl.bdd.Predicate[$ta]", f)
   }
 
 }

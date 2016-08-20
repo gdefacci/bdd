@@ -7,11 +7,27 @@ javaOptions ++= Seq("-Xss2048K", "-Xmx2g")
 
 lazy val runFeatures = inputKey[Unit]("run a sample feture")
 
+lazy val scalaMacros: Seq[Setting[_]] = Seq(
+  libraryDependencies ++= Seq(
+    "org.typelevel" %% "macro-compat" % "1.1.1",
+    "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
+    compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
+  )
+)
+
+lazy val commonBuildSettings = Seq(
+  scalaVersion := scala_2_11,
+  crossScalaVersions := allScalaVersion,
+  resolvers += Resolver.sonatypeRepo("snapshots"),
+  resolvers += Resolver.sonatypeRepo("releases"),
+  scalacOptions ++= Seq("-deprecation"),
+  publishMavenStyle := true
+)
+
 lazy val core = Project(
   "core",
   file("core"),
-  settings = Seq(
-    libraryDependencies <+= (scalaVersion)(sv => "org.scala-lang" % "scala-compiler" % sv),
+  settings = commonBuildSettings ++ scalaMacros ++ Seq(
     libraryDependencies += scalatest % "test"
   )
 )
@@ -19,7 +35,7 @@ lazy val core = Project(
 lazy val testkit = Project(
   "testkit",
   file("testkit"),
-  settings = Seq(
+  settings = commonBuildSettings ++ Seq(
     runFeatures := {
         (runMain in Test).fullInput(" org.obl.bdd.samples.TestRunMain").evaluated
     },
@@ -39,8 +55,8 @@ lazy val testkit = Project(
 lazy val root = (project in file(".")).
   aggregate(core, testkit).
   settings(
-    publishArtifact := false
-  )
+    commonBuildSettings ++ Seq(publishArtifact := false)
+  ) 
   
 
 
