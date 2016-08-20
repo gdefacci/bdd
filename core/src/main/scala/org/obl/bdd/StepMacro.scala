@@ -4,6 +4,14 @@ import scala.reflect.macros.blackbox.Context
 
 object StepMacro {
 
+  def filePosition(c:Context):c.Tree = {
+    import c.universe._
+
+    val line = c.enclosingPosition.line
+    val path = c.enclosingPosition.source.file.path
+    q"new org.obl.bdd.FilePosition($path, $line)"
+  }
+  
   def ownerDescription(c: Context): c.Tree = {
     import c.universe._
 
@@ -28,15 +36,25 @@ object StepMacro {
     import c.universe._
 
     val desc = ownerDescription(c)
-    q"""new $typ(org.obl.bdd.Text(None, $desc), $f)"""
+    val fpos = filePosition(c)
+    q"""new $typ(org.obl.bdd.Text(None, $desc), $f, Some($fpos))"""
   }
 
   private def newSelfDescribeLike(c: Context)(typ: c.Tree, f: c.Tree) = {
     import c.universe._
 
     val desc = ownerDescription(c)
-    q"""new $typ($desc, $f)"""
+    val fpos = filePosition(c)
+    q"""new $typ($desc, $f, Some($fpos))"""
   }
+  
+  private def newSelfDescribeLikeDescriptionProvided(c: Context)(typ: c.Tree, desc:c.Tree, f: c.Tree) = {
+    import c.universe._
+
+    val fpos = filePosition(c)
+    q"""new $typ($desc, $f, Some($fpos))"""
+  }
+
 
   def step[A: c.WeakTypeTag](c: Context)(f: c.Expr[A => A]): c.Tree = {
     import c.universe._
@@ -79,7 +97,17 @@ object StepMacro {
 
     newSelfDescribeLike(c)(tq"org.obl.bdd.Scenario[$ta, $tb]", f.tree)
   }
+  
+  def scenarioDescriptionProvided[S: c.WeakTypeTag, E: c.WeakTypeTag](c: Context)(description:c.Expr[String], f: c.Expr[Assertion[S, E]]): c.Tree = {
+    import c.universe._
 
+    val ta = c.weakTypeOf[S]
+    val tb = c.weakTypeOf[E]
+
+    newSelfDescribeLikeDescriptionProvided(c)(tq"org.obl.bdd.Scenario[$ta, $tb]", description.tree, f.tree)
+  }
+  
+  
   def predicate[A: c.WeakTypeTag](c: Context)(f: c.Expr[A => Boolean]): c.Tree = {
     import c.universe._
 

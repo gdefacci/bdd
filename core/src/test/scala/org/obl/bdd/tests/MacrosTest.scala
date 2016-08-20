@@ -46,7 +46,7 @@ class MacrosTest extends FunSuite {
 
    test("Scenario description") {
     
-    val scenario1 = scenario[Int,Int]( new Assertion[Int,Int](new Source[Int](Text(""), () => 12), Nil ) )
+    val scenario1 = scenario[Int,Int]( new Assertion[Int,Int](Source[Int](Text(""), () => 12), Nil ) )
    
     assert(scenario1.title == "scenario1")
   }
@@ -55,7 +55,7 @@ class MacrosTest extends FunSuite {
     
     val scenario1 = {
       val i = 12
-      scenario[Int,Int]( new Assertion[Int,Int](new Source[Int](Text(""), () => i), Nil ) )
+      scenario[Int,Int]( new Assertion[Int,Int](Source[Int](Text(""), () => i), Nil ) )
     }
    
     assert(scenario1.title == "scenario1")

@@ -9,13 +9,19 @@ class ConsoleReporter(writer: PrintWriter, featureRunner: FeatureRunner) {
     case StepSubject(i) => s"""The step "$i""""
     case ExpectationSubject(i) => s"""The expectation "$i""""
   }
+  
+  private def subjectPosition[S, E](subj: EventSubject[S, E]) = subj match {
+    case SourceSubject(i) => i.filePosition
+    case StepSubject(i) => i.filePosition
+    case ExpectationSubject(i) => i.filePosition
+  }
 
   private def errorDescription[S, E](err: ErrorEvent[S, E]) = {
     err match {
       case ev @ ExceptionEvent(subj, err) =>
-        s"${subjectDescription(subj)}${ExceptionEvent.getInput(ev).map(i => s" with state $i ").getOrElse("")}caused error ${err.getMessage}"
+        s"${subjectDescription(subj)}${ExceptionEvent.getInput(ev).map(i => s" with state $i ").getOrElse("")}caused error ${err.getMessage} ${subjectPosition(subj).map(lin => s"\n($lin)").getOrElse("")}"
       case ExpectationFailure(subj, input, err, _) =>
-        s"Error: $err\n${subjectDescription(subj)} failed with state $input"
+        s"Error: $err\n${subjectDescription(subj)} failed with state $input ${subj.expectation.filePosition.map(lin => s"\n$lin").getOrElse("")}"
     }
   }
 
@@ -38,7 +44,7 @@ class ConsoleReporter(writer: PrintWriter, featureRunner: FeatureRunner) {
             writer.println(s"  - ${scenario.title}  completed  sucessfully ($elapsed millis)")
           case FailedScenario(scenario, errs) =>
             writer.println(lineSep)
-            writer.println(s"Error !!!\n")
+            writer.println(s"Error !!!${scenario.filePosition.map(ln => s"\n($ln)").getOrElse("")}\n")
             writer.println(s"${scenario.toString}\n")
             errs.foreach { err =>
               writer.println(errorDescription(err))

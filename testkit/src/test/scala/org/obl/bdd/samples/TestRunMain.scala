@@ -5,7 +5,7 @@ import java.io.PrintWriter
 
 object TestRunMain extends App {
 
-  val features: Seq[Feature[_, _]] = Seq(CashWithdrawal, CalculatorFeature)
+  val features: Seq[Feature[_, _]] = CashWithdrawal +: CalculatorFeatures.features
 
   val featureRunner = FeatureRunner(DefaultScenarioRunner)
 

@@ -8,7 +8,7 @@ class Feature[S, E](val title: String,
   def this(title: String, description: String, scenarios: ScenarioLike[S, E]*) = this(title, Some(description), scenarios)
 
   def runnableScenarios: Seq[Scenario[S, E]] = scenarios.flatMap {
-    case s @ Scenario(_, _) => s :: Nil
+    case s @ Scenario(_, _,_) => s :: Nil
     case OutlineScenario(title, table, f) => table.map(f)
   }
 

@@ -50,15 +50,15 @@ case class CashWithdrawalExample(deposit: Int, requested: Int, expectedDispensed
 
 object CashWithdrawal extends Feature(
   "Cash withdrawal",
-  Scenario("Successful withdrawal from an account in credit",
+  scenario("Successful withdrawal from an account in credit",
     `Given i have deposited in my account`(100)
       When `i request`(20)
       Then `should be dispensed`(20)),
-  Scenario("Successful withdrawal from an account in debit",
+  scenario("Successful withdrawal from an account in debit",
     `Given i have deposited in my account`(10)
       When `i request`(20)
       Then `should be dispensed`(15)),
-  Scenario("Successful withdrawal from an account in debit using -",
+  scenario("Successful withdrawal from an account in debit using -",
     `Given i have deposited in my account`(10)
       - `i request`(20)
       - `should be dispensed`(10)),

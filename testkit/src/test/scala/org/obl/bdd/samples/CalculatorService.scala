@@ -20,12 +20,12 @@ trait CalculatorServiceSteps extends App with BDD[CalculatorTestState, String] {
   def `the calculator is run`: Step = step { state =>
     state.copy(result = Some(state.calculatorService.calculate(state.input)))
   }
-  
-  def `the result given by calculator is`(predicate:Int => Boolean):Expectation = expectation { state =>
+
+  def `the result given by calculator is`(predicate: Int => Boolean): Expectation = expectation { state =>
     if (state.result.exists(predicate(_))) Ok
     else Fail(s"expecting result $predicate got ${state.result}")
   }
-  
+
   def `the output should be`(result: Int): Expectation = expectation { state =>
     if (state.result.exists(_ == result)) Ok
     else Fail(s"expecting $result got ${state.result}")
@@ -33,47 +33,61 @@ trait CalculatorServiceSteps extends App with BDD[CalculatorTestState, String] {
 
 }
 
-object DummyCalculatorServiceSteps extends CalculatorServiceSteps {
-  def createCalculatorService: CalculatorService = new DummyCalculatorService
+class CalculatorFeatures(impls: Seq[CalculatorServiceSteps]) {
+
+  lazy val features: Seq[Feature[CalculatorTestState, String]] = impls.map { impl =>
+    import impl._
+
+    val `Add 2 numbers` = scenario(
+        
+      `given the input`("2+2")
+        When `the calculator is run`
+        Then `the output should be`(4)
+    )
+    
+    val `Add 3 numbers` = scenario(
+        
+      `given the input`("2+2+4")
+        When `the calculator is run`
+        Then `the result given by calculator is`(`equal to`(6))
+    )
+    
+    val `Add 3 numbers 2nd scenario` = scenario(
+        
+      `given the input`("2+2+4")
+        When `the calculator is run`
+        Then `the result given by calculator is`(`equal to`(6) or (`greater than`(8) but `less than`(10)))
+    )
+
+    new Feature[CalculatorTestState, String](
+      "Calculator Feature",
+      `Add 2 numbers`,
+      `Add 3 numbers`,
+      `Add 3 numbers 2nd scenario`,
+      
+      OutlineScenario(
+        "Some expressions",
+
+        ("3+4", 7) ::
+          ("3*4+7/2*15", 57) ::
+          ("98+1", 99) :: Nil) {
+
+          case (input, output) =>
+
+            Scenario(s"Calculate expression $input",
+
+              `given the input`(input)
+                Then `the calculator is run`
+                And `the output should be`(output))
+        })
+  }
+
 }
 
-import DummyCalculatorServiceSteps._
+object CalculatorFeatures extends CalculatorFeatures(new CalculatorServiceSteps {
+  def createCalculatorService: CalculatorService = new DummyCalculatorService
+} :: Nil)
 
-object CalculatorFeature extends Feature[CalculatorTestState, String](
-  "Calculator Feature",
-  Scenario("Add 2 numbers",
-
-    `given the input`("2+2")
-      When `the calculator is run`
-      Then `the output should be`(4)),
-
-  Scenario("Add 3 numbers",
-
-    `given the input`("2+2+4")
-      When `the calculator is run`
-      Then `the result given by calculator is`( `equal to`(6) )),
-
-  Scenario("Add 3 numbers",
-
-    `given the input`("2+2+4")
-      When `the calculator is run`
-      Then `the result given by calculator is`( `equal to`(6) or (`greater than`(8) but `less than`(10))  )),
-    
-  OutlineScenario(
-    "Some expressions",
-
-    ("3+4", 7) ::
-      ("3*4+7/2*15", 57) ::
-      ("98+1", 99) :: Nil) {
-
-      case (input, output) =>
-
-        Scenario(s"Calculate expression $input",
-
-          `given the input`(input)
-            Then `the calculator is run`
-            And `the output should be`(output))
-    })
 
 class DummyCalculatorService extends CalculatorService {
 

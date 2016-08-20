@@ -4,18 +4,23 @@ import language.experimental.macros
 
 sealed trait ScenarioLike[S, E]
 
-case class Scenario[S, E](title: String, assertion: Assertion[S, E]) extends ScenarioLike[S, E] {
+final case class Scenario[S, E](title: String, assertion: Assertion[S, E], filePosition:Option[FilePosition]) extends ScenarioLike[S, E] {
   override def toString = title + "\n\n" + assertion.toString()
 }
 
-case class OutlineScenario[I, S, E](title: String, table: Seq[I], f: I => Scenario[S, E]) extends ScenarioLike[S, E] {
+object Scenario {
+  def apply[S, E](title: String, assertion: Assertion[S, E]) =
+    new Scenario(title, assertion, None)
+}
+
+final case class OutlineScenario[I, S, E](title: String, table: Seq[I], f: I => Scenario[S, E]) extends ScenarioLike[S, E] {
 
   def scenarios: Seq[Scenario[S, E]] = table.map(f)
 
 }
 
 object OutlineScenario {
-  case class Factory[I](title: String, table: Seq[I]) {
+  final case class Factory[I](title: String, table: Seq[I]) {
     def apply[S, E](f: I => Scenario[S, E]) = OutlineScenario[I, S, E](title, table, f)
   }
 
