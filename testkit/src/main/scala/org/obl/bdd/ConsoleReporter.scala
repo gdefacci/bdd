@@ -49,10 +49,39 @@ class ConsoleReporter(writer: PrintWriter, featureRunner: FeatureRunner) {
     writer.flush()
   }
   
-  def runFeature[S, E](feature: Feature[S, E]):Unit = 
-    report(new TestInfos(featureRunner.run(feature)).scenarioOutcomes)
+  private case class TestAcc(successScenarios:Int, failedScenarios:Int, completedSteps:Int, completedExpectations:Int, errorsNumber:Int, start:Long, end:Long) {
+    def add(ti:TestInfos[_, _]):TestAcc = {
+      copy(
+        successScenarios = successScenarios + ti.successfullScenarios.length,
+        failedScenarios = failedScenarios + ti.failedScenarios.length,
+        completedSteps = completedSteps + ti.completedSteps.length,
+        completedExpectations = completedExpectations + ti.successfullExpectations.length,
+        errorsNumber = errorsNumber + ti.errors.length,
+        start = if (start == 0) ti.startTime else start,
+        end = if (end < ti.endTime) ti.endTime else end
+      )
+    }
+  }
+  
+  private def reportTotals(tot:TestAcc) = {
+    println(s"""
+${if (tot.failedScenarios >0) "Test completed with errors !!!" else "Test completed successfully"}
 
-  def runFeatures(infos: Seq[Feature[_, _]]): Unit =
-    infos.foreach(runFeature(_))
+total: ${tot.end-tot.start} ms, Successfull scenarios: ${tot.successScenarios}, Failed scenarios: ${tot.failedScenarios}, Steps: ${tot.completedSteps}, Expectations: ${tot.completedExpectations}
+
+""")
+  }
+  
+  def runFeatures(infos: Seq[Feature[_, _]]): Unit = {
+    def runFeature[S, E](testAcc:TestAcc, feature: Feature[S, E]):TestAcc = {
+      val testRes = new TestInfos(featureRunner.run(feature))
+      
+      report(testRes.scenarioOutcomes)
+      testAcc.add(testRes)
+    }
+    val z = TestAcc(0,0,0,0,0,0,0)
+    val acc = infos.foldLeft(z)(runFeature(_,_))
+    reportTotals(acc)
+  }
 
 }

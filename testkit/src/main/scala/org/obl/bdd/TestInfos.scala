@@ -6,35 +6,38 @@ case class FailedScenario[S, E](scenario: Scenario[S, E], errors: Seq[ErrorEvent
 
 class TestInfos[S, E](featureEvents: Seq[FeatureRunEvent[S, E]]) {
 
-  private lazy val testEvents = featureEvents.map(_.event)
-
-  private lazy val startTimeEvents = featureEvents.collect {
-    case FeatureRunEvent(feature, scenario, StartEvent(SourceSubject(_), time)) => (feature, scenario, time)
+  private lazy val scenarioStartTimeEvents = featureEvents.collect {
+    case FeatureRunEvent(feature, scenario, ev @ StartEvent(SourceSubject(_), _)) => (feature, scenario, ev)
   }
 
-  private lazy val featureAndScenarios = startTimeEvents.map(e => e._1 -> e._2).groupBy(_._1).map { case (k, v) => k -> v.map(_._2) }
-
-  private lazy val startTimeMap = startTimeEvents.collect {
-    case (_, scenario, time) => scenario -> time
+  private lazy val startTimeMap = scenarioStartTimeEvents.collect {
+    case (_, scenario, ev) => scenario -> ev.time
   }.toMap
 
-  private lazy val successEndTimeMap = (featureEvents.collect {
-    case FeatureRunEvent(_, scenario, SuccessEvent(subj, _, time)) => scenario -> time
+  private lazy val successEventsMap = (featureEvents.collect {
+    case FeatureRunEvent(_, scenario, ev @ SuccessEvent(_, _, _)) => scenario -> ev
+  })
+
+  private lazy val successEndTimeMap = (successEventsMap.collect {
+    case (scenario, SuccessEvent(subj, _, time)) => scenario -> time
   }).groupBy(_._1).map {
     case (k, v) => k -> v.map(_._2).max
   }
 
   private def duration(scenario: Scenario[S, E]) = successEndTimeMap(scenario) - startTimeMap(scenario)
 
-  private lazy val errors: Map[Scenario[S, E], Seq[ErrorEvent[S, E]]] = (featureEvents.collect {
+  private lazy val errorsMap: Map[Scenario[S, E], Seq[ErrorEvent[S, E]]] = (featureEvents.collect {
     case FeatureRunEvent(_, scenario, ev @ ExceptionEvent(subj, err)) => scenario -> ev
     case FeatureRunEvent(_, scenario, ev @ ExpectationFailure(subj, _, _, _)) => scenario -> ev
   }).groupBy(_._1).map { case (k, v) => k -> v.map(_._2) }
 
-  lazy val scenarioOutcomes: Seq[(Feature[S, E], Seq[ScenarioOutcome[S, E]])] = featureAndScenarios.map { p =>
+  lazy val scenariosByFeature: Map[Feature[S, E], Seq[Scenario[S, E]]] =
+    scenarioStartTimeEvents.map(e => e._1 -> e._2).groupBy(_._1).map { case (k, v) => k -> v.map(_._2) }
+
+  lazy val scenarioOutcomes: Seq[(Feature[S, E], Seq[ScenarioOutcome[S, E]])] = scenariosByFeature.map { p =>
     val (feature, scenarios) = p
     feature -> (scenarios.map { scenario =>
-      errors.get(scenario) match {
+      errorsMap.get(scenario) match {
         case None =>
           SuccessfullScenario(scenario, duration(scenario))
         case Some(errs) =>
@@ -43,4 +46,31 @@ class TestInfos[S, E](featureEvents: Seq[FeatureRunEvent[S, E]]) {
     })
   }.toSeq
 
+  lazy val errors: Seq[ErrorEvent[S, E]] = errorsMap.flatMap(_._2).toSeq
+
+  lazy val failedScenarios: Seq[FailedScenario[S, E]] = scenarioOutcomes.flatMap {
+    case (_, scenarios) => scenarios.collect {
+      case s @ FailedScenario(_, _) => s
+    }
+  }
+
+  lazy val successfullScenarios: Seq[SuccessfullScenario[S, E]] = scenarioOutcomes.flatMap {
+    case (_, scenarios) => scenarios.collect {
+      case s @ SuccessfullScenario(_, _) => s
+    }
+  }
+
+  lazy val completedSteps: Seq[Step[S]] = successEventsMap.collect {
+    case (_, SuccessEvent(StepSubject(step), _, _)) => step
+  }
+
+  lazy val successfullExpectations: Seq[Expectation[S, E]] = successEventsMap.collect {
+    case (_, SuccessEvent(ExpectationSubject(exp), _, _)) => exp
+  }
+
+  lazy val startTime: Long = startTimeMap.values.min
+
+  lazy val endTime: Long = Math.max(successEndTimeMap.values.max, errors.map(_.time).max)
+
+  lazy val totalTime: Long = endTime - startTime
 }
