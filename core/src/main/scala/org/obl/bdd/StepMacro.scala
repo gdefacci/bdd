@@ -56,22 +56,22 @@ object StepMacro {
   }
 
 
-  def step[A: c.WeakTypeTag](c: Context)(f: c.Expr[A => A]): c.Tree = {
+  def step[A: c.WeakTypeTag](c: Context)(f: c.Tree): c.Tree = {
     import c.universe._
     
     val ta = c.weakTypeOf[A]
-    newDescriptionAndParameterType(c)(tq"org.obl.bdd.Step[$ta]", f.tree)
+    newDescriptionAndParameterType(c)(tq"org.obl.bdd.Step[$ta]", f)
   }
 
-  def source[A: c.WeakTypeTag](c: Context)(f: c.Expr[() => A]): c.Tree = {
+  def source[A: c.WeakTypeTag](c: Context)(f: c.Tree): c.Tree = {
     import c.universe._
 
     val ta = c.weakTypeOf[A]
 
-    newDescriptionAndParameterType(c)(tq"org.obl.bdd.Source[$ta]", f.tree)
+    newDescriptionAndParameterType(c)(tq"org.obl.bdd.Source[$ta]", f)
   }
 
-  def expectation[A: c.WeakTypeTag, E: c.WeakTypeTag](c: Context)(f: c.Expr[A => TestResult[E]]): c.Tree = {
+  def expectation[A: c.WeakTypeTag, E: c.WeakTypeTag](c: Context)(f: c.Tree): c.Tree = {
     import c.universe._
 
     val ta = c.weakTypeOf[A]
@@ -80,40 +80,40 @@ object StepMacro {
     newDescriptionAndParameterType(c)(tq"org.obl.bdd.Expectation[$ta,$te]", q"{ (state:$ta) => Seq($f(state)) }")
   }
 
-  def selfDescribe[A: c.WeakTypeTag, B: c.WeakTypeTag](c: Context)(f: c.Expr[A => B]): c.Tree = {
+  def selfDescribe[A: c.WeakTypeTag, B: c.WeakTypeTag](c: Context)(f: c.Tree): c.Tree = {
     import c.universe._
 
     val ta = c.weakTypeOf[A]
     val tb = c.weakTypeOf[B]
 
-    newSelfDescribeLike(c)(tq"org.obl.bdd.SelfDescribeF1[$ta, $tb]", f.tree)
+    newSelfDescribeLike(c)(tq"org.obl.bdd.SelfDescribeF1[$ta, $tb]", f)
   }
   
-  def scenario[S: c.WeakTypeTag, E: c.WeakTypeTag](c: Context)(f: c.Expr[Assertion[S, E]]): c.Tree = {
+  def scenario[S: c.WeakTypeTag, E: c.WeakTypeTag](c: Context)(f: c.Tree): c.Tree = {
     import c.universe._
 
     val ta = c.weakTypeOf[S]
     val tb = c.weakTypeOf[E]
 
-    newSelfDescribeLike(c)(tq"org.obl.bdd.Scenario[$ta, $tb]", f.tree)
+    newSelfDescribeLike(c)(tq"org.obl.bdd.Scenario[$ta, $tb]", f)
   }
   
-  def scenarioDescriptionProvided[S: c.WeakTypeTag, E: c.WeakTypeTag](c: Context)(description:c.Expr[String], f: c.Expr[Assertion[S, E]]): c.Tree = {
+  def scenarioDescriptionProvided[S: c.WeakTypeTag, E: c.WeakTypeTag](c: Context)(description:c.Tree, f: c.Tree): c.Tree = {
     import c.universe._
 
     val ta = c.weakTypeOf[S]
     val tb = c.weakTypeOf[E]
 
-    newSelfDescribeLikeDescriptionProvided(c)(tq"org.obl.bdd.Scenario[$ta, $tb]", description.tree, f.tree)
+    newSelfDescribeLikeDescriptionProvided(c)(tq"org.obl.bdd.Scenario[$ta, $tb]", description, f)
   }
   
   
-  def predicate[A: c.WeakTypeTag](c: Context)(f: c.Expr[A => Boolean]): c.Tree = {
+  def predicate[A: c.WeakTypeTag](c: Context)(f: c.Tree): c.Tree = {
     import c.universe._
 
     val ta = c.weakTypeOf[A]
 
-    newDescriptionAndParameterType(c)(tq"org.obl.bdd.Predicate[$ta]", f.tree)
+    newDescriptionAndParameterType(c)(tq"org.obl.bdd.Predicate[$ta]", f)
   }
 
 }
