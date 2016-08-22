@@ -79,7 +79,7 @@ class CalculatorFeatures(impls: Seq[CalculatorServiceSteps]) {
               `given the input`(input)
                 Then `the calculator is run`
                 And `the output should be`(output))
-        })
+        }) 
   }
 
 }

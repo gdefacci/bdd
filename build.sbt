@@ -44,16 +44,18 @@ lazy val testkit = Project(
 ).dependsOn(core)
 
 
-// lazy val bddTestInterface = Project(
-//   "bdd-sbt-test-interface",
-//   file("bdd-test-interface"),
-//   settings = Seq(
-//     libraryDependencies += sbtTestInterface % "provided"
-//   )
-// ).dependsOn(core)
+lazy val bddSbtTestInterface = Project(
+  "sbt-test-interface",
+  file("sbt-test-interface"),
+  settings = commonBuildSettings ++ Seq(
+    libraryDependencies += sbtTestInterface % "provided",
+    libraryDependencies += "org.scala-sbt" % "test-interface" % "1.0",
+    libraryDependencies += "org.scala-js" %% "scalajs-stubs" % scalaJSVersion % "provided"
+  )
+).dependsOn(core, testkit)
 
 lazy val root = (project in file(".")).
-  aggregate(core, testkit).
+  aggregate(core, testkit, bddSbtTestInterface).
   settings(
     commonBuildSettings ++ Seq(publishArtifact := false)
   ) 

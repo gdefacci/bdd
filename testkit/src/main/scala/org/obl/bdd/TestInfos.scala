@@ -17,11 +17,13 @@ class TestInfos[S, E](featureEvents: Seq[FeatureRunEvent[S, E]]) {
   private lazy val successEventsMap = (featureEvents.collect {
     case FeatureRunEvent(_, scenario, ev @ SuccessEvent(_, _, _)) => scenario -> ev
   })
+  
+  def maxOrZero(ls:Iterable[Long]) = if (ls.isEmpty) 0 else ls.max
 
   private lazy val successEndTimeMap = (successEventsMap.collect {
     case (scenario, SuccessEvent(subj, _, time)) => scenario -> time
   }).groupBy(_._1).map {
-    case (k, v) => k -> v.map(_._2).max
+    case (k, v) => k -> maxOrZero(v.map(_._2))
   }
 
   private def duration(scenario: Scenario[S, E]) = successEndTimeMap(scenario) - startTimeMap(scenario)
@@ -68,9 +70,9 @@ class TestInfos[S, E](featureEvents: Seq[FeatureRunEvent[S, E]]) {
     case (_, SuccessEvent(ExpectationSubject(exp), _, _)) => exp
   }
 
-  lazy val startTime: Long = startTimeMap.values.min
+  lazy val startTime: Long = if (startTimeMap.values.isEmpty) Long.MaxValue else startTimeMap.values.min
 
-  lazy val endTime: Long = Math.max(successEndTimeMap.values.max, errors.map(_.time).max)
+  lazy val endTime: Long = Math.max(maxOrZero(successEndTimeMap.values), maxOrZero(errors.map(_.time)))
 
   lazy val totalTime: Long = endTime - startTime
 }

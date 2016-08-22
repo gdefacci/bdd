@@ -30,18 +30,18 @@ class StepMacro(val c: blackbox.Context) {
   private def newDescriptionAndParameterType(typ: Tree, f: Tree): Tree = {
     val desc = ownerDescription
     val fpos = filePosition
-    q"""new $typ(org.obl.bdd.Text(None, $desc), $f, Some($fpos))"""
+    c.typecheck( q"""new $typ(org.obl.bdd.Text(None, $desc), $f, Some($fpos))""" )
   }
 
   private def newSelfDescribeLike(typ: Tree, f: Tree): Tree = {
     val desc = ownerDescription
     val fpos = filePosition
-    q"""new $typ($desc, $f, Some($fpos))"""
+    c.typecheck( q"""new $typ($desc, $f, Some($fpos))""" )
   }
 
   private def newSelfDescribeLikeDescriptionProvided(typ: Tree, desc: Tree, f: Tree): Tree = {
     val fpos = filePosition
-    q"""new $typ($desc, $f, Some($fpos))"""
+    c.typecheck( q"""new $typ($desc, $f, Some($fpos))""" )
   }
 
   def step[A: c.WeakTypeTag](f: Tree): Tree = {
