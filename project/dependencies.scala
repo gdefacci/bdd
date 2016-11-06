@@ -12,4 +12,6 @@ object Dependencies extends Build {
   
   val scalatest = "org.scalatest" %% "scalatest" % "2.2.6"
 
+  val scalazCore = "org.scalaz" %% "scalaz-core" % "7.2.6" 
+
 }

@@ -1,5 +1,5 @@
-organization in ThisBuild :="org.obl.bdd"
-version in ThisBuild :="0.1.0"
+organization in ThisBuild :="com.github.gdefacci.bdd"
+version in ThisBuild :="0.1.0-SNAPSHOT"
 
 scalaVersion in ThisBuild := "2.11.8"
 
@@ -36,13 +36,11 @@ lazy val testkit = Project(
   "testkit",
   file("testkit"),
   settings = commonBuildSettings ++ Seq(
-    runFeatures := {
-        (runMain in Test).fullInput(" org.obl.bdd.samples.TestRunMain").evaluated
-    },
-    libraryDependencies += scalatest % "test"
+    libraryDependencies += scalatest % "test",
+    libraryDependencies += scalazCore
+
   )
 ).dependsOn(core)
-
 
 lazy val bddSbtTestInterface = Project(
   "sbt-test-interface",
@@ -60,5 +58,7 @@ lazy val root = (project in file(".")).
     commonBuildSettings ++ Seq(publishArtifact := false)
   ) 
   
+
+
 
 
