@@ -22,7 +22,7 @@ class ConsoleReporter(writer: PrintWriter, featureRunner: FeatureRunner) {
 
         scenarios.foreach {
           case SuccessfullScenario(scenario, elapsed) =>
-            writer.println(s"  - ${scenario.title}  completed  sucessfully ($elapsed millis)")
+            writer.println(s"  - ${scenario.title}")
           case FailedScenario(scenario, errs) =>
             writer.println(lineSep)
             writer.println(s"Error !!!${scenario.filePosition.map(ln => s"\n($ln)").getOrElse("")}\n")
@@ -32,6 +32,7 @@ class ConsoleReporter(writer: PrintWriter, featureRunner: FeatureRunner) {
             }
             writer.println(lineSep)
         }
+        writer.println("")
     }
     writer.flush()
   }
