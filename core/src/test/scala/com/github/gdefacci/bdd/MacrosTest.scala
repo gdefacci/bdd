@@ -54,7 +54,7 @@ class MacrosTest extends FunSuite {
     
     val bdd = new BDD[Int, Id, Int] {} 
      
-    val scenario1 = bdd.scenario( new Assertion[Int,Id,Int](Flow[Int,Id](Text(""), () => 12), Nil ) )
+    val scenario1 = bdd.scenario( Flow[Int,Id,Int](Text(""), () => 12) ) 
    
     assert(scenario1.title == "scenario1")
   }
@@ -64,7 +64,7 @@ class MacrosTest extends FunSuite {
 
     val scenario1 = {
       val i = 12
-      bdd.scenario( new Assertion[Int, Id,Int](Flow[Int, Id](Text(""), () => i), Nil ) )
+      bdd.scenario( Flow[Int, Id, Int](Text(""), () => i) ) 
     }
    
     assert(scenario1.title == "scenario1")

@@ -15,14 +15,14 @@ class FeatureScenario(val title: String, val run: () => List[(ScenarioDescriptio
 object FeatureScenario {
 
   implicit def fromScenario[S, M[_], E](sc: Scenario[S, M, E])(implicit monad: Monad[M]): FeatureScenario = {
-    val desc = new ScenarioDescription(sc.title, sc.assertion.description.description, sc.filePosition)
+    val desc = new ScenarioDescription(sc.title, sc.assertion.description, sc.filePosition)
     new FeatureScenario(sc.title, () => List(desc -> new AssertionRunner[M].runEvents(sc.assertion)))
   }
 
   implicit def fromOutlineScenario[I, S, M[_], E](sc: OutlineScenario[I, S, M, E])(implicit monad: Monad[M]): FeatureScenario = {
     val runner = new AssertionRunner[M]
     new FeatureScenario(sc.title, () => 
-      sc.scenarios.toList.map(sc => new ScenarioDescription(sc.title, sc.assertion.description.description, sc.filePosition) -> runner.runEvents(sc.assertion))
+      sc.scenarios.toList.map(sc => new ScenarioDescription(sc.title, sc.assertion.description, sc.filePosition) -> runner.runEvents(sc.assertion))
     )
   }
 

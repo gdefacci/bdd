@@ -1,5 +1,5 @@
 organization in ThisBuild :="com.github.gdefacci.bdd"
-version in ThisBuild :="0.1.0-SNAPSHOT"
+version in ThisBuild :="0.2.0-SNAPSHOT"
 
 scalaVersion in ThisBuild := "2.11.8"
 
@@ -57,8 +57,3 @@ lazy val root = (project in file(".")).
   settings(
     commonBuildSettings ++ Seq(publishArtifact := false)
   ) 
-  
-
-
-
-

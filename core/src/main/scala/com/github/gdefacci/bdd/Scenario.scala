@@ -4,12 +4,12 @@ import language.higherKinds
 
 sealed trait ScenarioLike[S, M[_], E]
 
-final case class Scenario[S, M[_], E](title: String, assertion: Assertion[S, M, E], filePosition: Option[FilePosition]) extends ScenarioLike[S, M, E] {
+final case class Scenario[S, M[_], E](title: String, assertion: Flow[S, M, E], filePosition: Option[FilePosition]) extends ScenarioLike[S, M, E] {
   override def toString = title + "\n\n" + assertion.toString()
 }
 
 object Scenario {
-  def apply[S, M[_], E](title: String, assertion: Assertion[S, M, E]) =
+  def apply[S, M[_], E](title: String, assertion: Flow[S, M, E]) =
     new Scenario(title, assertion, None)
 }
 

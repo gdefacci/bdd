@@ -54,11 +54,13 @@ class StepMacro(val c: blackbox.Context) {
     q"com.github.gdefacci.bdd.Step[$ta, $tb]($description, $f, $position)"
   }
 
-  def source[A: c.WeakTypeTag, M[_]](f: Tree)(implicit mwt: c.WeakTypeTag[M[_]]): Tree = {
+  def source[A: c.WeakTypeTag, M[_], E: c.WeakTypeTag](f: Tree)(implicit mwt: c.WeakTypeTag[M[_]]): Tree = {
     val ta = c.weakTypeOf[A]
+    val te = c.weakTypeOf[E]
+
     val tb = c.weakTypeOf[M[_]].typeConstructor
 
-    q"new com.github.gdefacci.bdd.Flow[$ta, $tb]($description, $f, Nil, $position)"
+    q"new com.github.gdefacci.bdd.Flow[$ta, $tb, $te]($description, $f, Nil, $position)"
   }
 
   def expectation[A: c.WeakTypeTag, E: c.WeakTypeTag, M[_]](f: Tree)(implicit mwt: c.WeakTypeTag[M[_]]): Tree = {
@@ -86,10 +88,10 @@ class StepMacro(val c: blackbox.Context) {
 
   def scenario[S: c.WeakTypeTag, M[_], E: c.WeakTypeTag](f: Tree)(implicit mwt: c.WeakTypeTag[M[_]]): Tree = {
     val ta = c.weakTypeOf[S]
-    val tb = c.weakTypeOf[E]
+    val te = c.weakTypeOf[E]
     val tm = c.weakTypeOf[M[_]].typeConstructor
 
-    q"new com.github.gdefacci.bdd.Scenario[$ta,$tm, $tb]($ownerDescription, $f, $position)"
+    q"new com.github.gdefacci.bdd.Scenario[$ta,$tm, $te]($ownerDescription, $f, $position)"
   }
 
   def scenarioDescriptionProvided[S: c.WeakTypeTag, M[_], E: c.WeakTypeTag](description: Tree, f: Tree)(implicit mwt: c.WeakTypeTag[M[_]]): Tree = {

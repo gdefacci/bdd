@@ -11,7 +11,7 @@ class AssertionRunnerTest extends FunSuite {
   
   test("ok") {
 
-    val assertion = Flow[String, Id](Text("aa"), () => "str") And
+    val assertion = Flow[String, Id, String](Text("aa"), () => "str") And
       Step[String,Id](Text("b"), a => "bb" + a) Then
       Step[String,Id](Text("c"), a => "cc" + a) And
       Expectation[String, Id, String](Text("exp"), s => Ok :: Nil)
@@ -26,7 +26,7 @@ class AssertionRunnerTest extends FunSuite {
 
   test("expectation failure") {
 
-    val assertion = Flow[String, Id](Text("aa"), () => "str") And
+    val assertion = Flow[String, Id, String](Text("aa"), () => "str") And
       Step[String, Id](Text("b"), a => "bb" + a) Then
       Step[String, Id](Text("c"), a => "cc" + a) And
       Expectation[String, Id, String](Text("c"), s => Fail("fail") :: Nil)
@@ -41,7 +41,7 @@ class AssertionRunnerTest extends FunSuite {
 
   test("source fails") {
 
-    val assertion = Flow[String, Id](Text("aa"), () => fail("source")) And
+    val assertion = Flow[String, Id, String](Text("aa"), () => fail("source")) And
       Step[String, Id](Text("b"), a => "bb" + a) Then
       Step[String, Id](Text("c"), a => "cc" + a) And
       Expectation[String, Id, String](Text("c"), s => Ok :: Nil)
@@ -56,7 +56,7 @@ class AssertionRunnerTest extends FunSuite {
 
   test("step fails") {
 
-    val assertion = Flow[String, Id](Text("aa"), () => "str") And
+    val assertion = Flow[String, Id, String](Text("aa"), () => "str") And
       Step[String, Id](Text("b"), (a:String) => fail("step")) Then
       Step[String, Id](Text("c"), a => "cc" + a) And
       Expectation[String, Id, String](Text("c"), s => Ok :: Nil)
@@ -71,7 +71,7 @@ class AssertionRunnerTest extends FunSuite {
 
   test("expectation fails") {
 
-    val assertion = Flow[String, Id](Text("aa"), () => "str") And
+    val assertion = Flow[String, Id, String](Text("aa"), () => "str") And
       Step[String, Id](Text("b"), a => "bb" + a) Then
       Step[String, Id](Text("c"), a => "cc" + a) And
       Expectation[String, Id, String](Text("c"), s => fail("expectation"))
