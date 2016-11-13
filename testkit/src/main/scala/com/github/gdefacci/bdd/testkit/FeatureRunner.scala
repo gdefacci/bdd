@@ -1,20 +1,7 @@
 package com.github.gdefacci.bdd
 package testkit
 
-import language.higherKinds
-import scalaz.Monad
-
 object FeaturesRunner {
-  
-  def runOld(feats:Features):Seq[(Feature, String, List[RunEvent])] = {
-    feats.features.flatMap { feat =>
-      feat.run.flatMap {
-        case (scenarioTitle, descEvents) => descEvents.map {
-          case (desc, evs) => (feat, scenarioTitle, evs)
-        }  
-      }  
-    }
-  }
   
   def run(feats:Features):Seq[FeatureRun] = 
     feats.features.map { feat =>
@@ -23,7 +10,6 @@ object FeaturesRunner {
       })
     }
   
-   
 }
 
 class FeatureRun(val feature:Feature, val scenarioGroups:Seq[ScenarioGroup]) {

@@ -1,11 +1,7 @@
 package com.github.gdefacci.bdd
 
-import language.higherKinds
-import com.github.gdefacci.bdd.testkit.AssertionRunner
-import scalaz.Monad
-
-import language.higherKinds
 import language.implicitConversions
+import com.github.gdefacci.bdd.testkit.AssertionRunner
 
 class ScenarioDescription(val title:String, desc: => Description, val filePosition:Option[FilePosition]) {
   lazy val description = desc
@@ -14,15 +10,14 @@ class FeatureScenario(val title: String, val run: () => List[(ScenarioDescriptio
 
 object FeatureScenario {
 
-  implicit def fromScenario[S, M[_], E](sc: Scenario[S, M, E])(implicit monad: Monad[M]): FeatureScenario = {
+  implicit def fromScenario[S, E](sc: Scenario[S, E]): FeatureScenario = {
     val desc = new ScenarioDescription(sc.title, sc.assertion.description, sc.filePosition)
-    new FeatureScenario(sc.title, () => List(desc -> new AssertionRunner[M].runEvents(sc.assertion)))
+    new FeatureScenario(sc.title, () => List(desc -> AssertionRunner.runEvents(sc.assertion)))
   }
 
-  implicit def fromOutlineScenario[I, S, M[_], E](sc: OutlineScenario[I, S, M, E])(implicit monad: Monad[M]): FeatureScenario = {
-    val runner = new AssertionRunner[M]
+  implicit def fromOutlineScenario[I, S, E](sc: OutlineScenario[I, S, E]): FeatureScenario = {
     new FeatureScenario(sc.title, () => 
-      sc.scenarios.toList.map(sc => new ScenarioDescription(sc.title, sc.assertion.description, sc.filePosition) -> runner.runEvents(sc.assertion))
+      sc.scenarios.toList.map(sc => new ScenarioDescription(sc.title, sc.assertion.description, sc.filePosition) -> AssertionRunner.runEvents(sc.assertion))
     )
   }
 

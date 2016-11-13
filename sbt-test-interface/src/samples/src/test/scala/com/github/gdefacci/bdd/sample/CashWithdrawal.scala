@@ -22,7 +22,7 @@ case class CashWithdrawalService(private var deposited: Int = 0) {
 
 case class CashWithdrawalTestState(service: CashWithdrawalService, dispensed: Option[Int])
 
-trait CashWithdrawalSteps extends BDD[CashWithdrawalTestState, scalaz.Id.Id, String] {
+trait CashWithdrawalSteps extends BDD[CashWithdrawalTestState, String] {
 
   def `Given i have deposited in my account`(amount: Int): Source = source { () =>
     val service = new CashWithdrawalService()

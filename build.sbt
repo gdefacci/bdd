@@ -36,9 +36,7 @@ lazy val testkit = Project(
   "testkit",
   file("testkit"),
   settings = commonBuildSettings ++ Seq(
-    libraryDependencies += scalatest % "test",
-    libraryDependencies += scalazCore
-
+    libraryDependencies += scalatest % "test"
   )
 ).dependsOn(core)
 

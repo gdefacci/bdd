@@ -21,6 +21,9 @@ final class Task(task: TaskDef, cl: ClassLoader) extends BaseTask {
 
   def execute(eventHandler: EventHandler, loggers: Array[Logger]): Array[BaseTask] = {
 
+    def logScenarioTitle(title:String) =
+      loggers.foreach(_.info(Console.GREEN + s"  Scenario : $title" + Console.RESET))
+    
     loadFeaturesClass(task.fullyQualifiedName(), cl).fold(()) { featureHolder =>
       loggers.foreach { log =>
         log.info("\n" + Console.GREEN + task.fullyQualifiedName() + Console.RESET + "\n")
@@ -29,27 +32,27 @@ final class Task(task: TaskDef, cl: ClassLoader) extends BaseTask {
       featRunEves match {
         case Failure(err) => 
           loggers.foreach(_.error(Console.RED + s"  Error : ${err.getMessage}\n${err.getStackTrace.mkString(", ")}" + Console.RESET))
-          eventHandler.handle(sbtEvents.error(err))
+          eventHandler.handle(sbtEvents.error(task.fullyQualifiedName(), err))
         case Success(featRunEves) =>
           val tinfos = new TestInfos(featRunEves)
           tinfos.results.foreach { fr =>
             fr.scenarioGroups.foreach { sr =>
               if (sr.isSuccessfull) {
-                loggers.foreach(_.info(Console.GREEN + s"  Scenario : ${sr.title}" + Console.RESET))
+                logScenarioTitle(sr.title)
                 sr.scenarios.foreach { sc =>
                   eventHandler.handle(sbtEvents.success(sc.title, sc.totalTime))
                 }
               } else {
                 sr.scenarios.foreach { sc =>
                   if (sc.isSuccessfull) {
-                    loggers.foreach(_.info(Console.GREEN + s"  Scenario : ${sc.title}" + Console.RESET))
+                    logScenarioTitle(sc.title)
                     eventHandler.handle(sbtEvents.success(sc.title, sc.totalTime))
                   } else {
                     loggers.foreach { log =>
                       log.error(Descriptions.failedScenario(sc))
                     }
                     sc.events.foreach {
-                      case e: ErrorEvent => eventHandler.handle(sbtEvents.error(e))
+                      case e: ErrorEvent => eventHandler.handle(sbtEvents.error(sc.title, e))
                       case _ => ()
                     }
                   }

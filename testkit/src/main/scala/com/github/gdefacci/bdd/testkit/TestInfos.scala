@@ -1,10 +1,8 @@
 package com.github.gdefacci.bdd
 package testkit
 
-import language.higherKinds
 import com.github.gdefacci.bdd.Feature
 
-//Seq[FeatureRun]
 class TestInfos(val results: Seq[FeatureRun]) {
 
   lazy val resultEvents: Seq[RunEvent] = results.flatMap { fr =>

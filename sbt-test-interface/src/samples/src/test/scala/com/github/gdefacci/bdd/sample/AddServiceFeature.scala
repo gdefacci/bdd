@@ -1,15 +1,13 @@
 package com.github.gdefacci.bdd
 package sample
 
-import scalaz.Id.Id
-
 trait SumService {
   def sum(lst: List[Int]): Int
 }
 
 case class AddServiceTestState(calculatorService: SumService, input: List[Int], result: Option[Int])
 
-trait AddServiceSteps extends App with BDD[AddServiceTestState, Id, String] {
+trait AddServiceSteps extends App with BDD[AddServiceTestState, String] {
 
   def createService = new SumService {
     def sum(lst: List[Int]): Int = lst.sum

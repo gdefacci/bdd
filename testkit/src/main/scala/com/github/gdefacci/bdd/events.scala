@@ -1,7 +1,5 @@
 package com.github.gdefacci.bdd
 
-import language.higherKinds
-
 sealed trait RunEvent {
   def startTime: Long
   def endTime: Long
@@ -10,7 +8,7 @@ sealed trait RunEvent {
   def totalTime = endTime - startTime
 }
 
-sealed trait ScenarioRunEvent[S, M[_], E] extends RunEvent 
+sealed trait ScenarioRunEvent[S, E] extends RunEvent 
 
 sealed trait EventSubject {
   def description:Description
@@ -23,7 +21,7 @@ case class StepSubject(description:Description, position:Option[FilePosition]) e
 case class ExpectationSubject(description:Description, position:Option[FilePosition]) extends EventSubject
 
 sealed trait SuccessEvent extends RunEvent
-sealed trait SuccessRunEvent[S, M[_], E]  extends SuccessEvent with ScenarioRunEvent[S,M,E] 
+sealed trait SuccessRunEvent[S,  E]  extends SuccessEvent with ScenarioRunEvent[S,E] 
 
 sealed trait SourceSuccess extends SuccessEvent {
   def output:Any
@@ -38,21 +36,21 @@ sealed trait ExpectationSuccess extends SuccessEvent {
   def input:Any
 }
 
-case class SourceSuccessRunEvent[S, M[_], E](subject: SourceSubject, output:S, startTime:Long, endTime: Long) extends SourceSuccess with SuccessRunEvent[S,M,E]
-case class StepSuccessRunEvent[S, M[_], E](subject: StepSubject, input:M[S], output:M[S], startTime:Long, endTime: Long) extends StepSuccess with SuccessRunEvent[S,M,E]
-case class ExpectationSuccessRunEvent[S, M[_], E](subject: ExpectationSubject, input:M[S], startTime:Long, endTime: Long) extends ExpectationSuccess with SuccessRunEvent[S,M,E]
+case class SourceSuccessRunEvent[S,  E](subject: SourceSubject, output:S, startTime:Long, endTime: Long) extends SourceSuccess with SuccessRunEvent[S,E]
+case class StepSuccessRunEvent[S,  E](subject: StepSubject, input:S, output:S, startTime:Long, endTime: Long) extends StepSuccess with SuccessRunEvent[S,E]
+case class ExpectationSuccessRunEvent[S, E](subject: ExpectationSubject, input:S, startTime:Long, endTime: Long) extends ExpectationSuccess with SuccessRunEvent[S,E]
 
 sealed trait ErrorEvent extends RunEvent
-sealed trait ErrorRunEvent[S, M[_], E] extends ErrorEvent with ScenarioRunEvent[S,M,E]
+sealed trait ErrorRunEvent[S, E] extends ErrorEvent with ScenarioRunEvent[S,E]
 
 sealed trait ExceptionEvent extends ErrorEvent {
   def exception: Throwable
 }
-sealed trait ExceptionRunEvent[S, M[_], E] extends ExceptionEvent with ErrorRunEvent[S,M,E] 
+sealed trait ExceptionRunEvent[S, E] extends ExceptionEvent with ErrorRunEvent[S,E] 
 
 object ExceptionRunEvent {
 
-  def unapply[S, M[_], E](ev: ExceptionRunEvent[S,M,E]): Option[(EventSubject, Throwable)] = {
+  def unapply[S, E](ev: ExceptionRunEvent[S,E]): Option[(EventSubject, Throwable)] = {
     Some(ev.subject -> ev.exception)
   }
 }
@@ -72,7 +70,7 @@ sealed trait ExpectationFailure extends ErrorEvent {
   def failures: Seq[Any]
 }
 
-case class SourceErrorRunEvent[S, M[_], E](subject: SourceSubject, exception: Throwable, startTime:Long, endTime: Long) extends SourceError with ExceptionRunEvent[S,M,E]
-case class StepErrorRunEvent[S,  M[_], E](subject: StepSubject, input: M[S], exception: Throwable, startTime:Long, endTime: Long) extends StepError with ExceptionRunEvent[S,M,E]
-case class ExpectationErrorRunEvent[S,  M[_], E](subject: ExpectationSubject, input: M[S], exception: Throwable, startTime:Long, endTime: Long) extends ExpectationError with ExceptionRunEvent[S,M,E]
-case class ExpectationFailureRunEvent[S,  M[_], E](subject: ExpectationSubject, input: M[S], failures: Seq[E], startTime:Long, endTime: Long) extends ExpectationFailure with ErrorRunEvent[S,M,E]
+case class SourceErrorRunEvent[S, E](subject: SourceSubject, exception: Throwable, startTime:Long, endTime: Long) extends SourceError with ExceptionRunEvent[S,E]
+case class StepErrorRunEvent[S,  E](subject: StepSubject, input: S, exception: Throwable, startTime:Long, endTime: Long) extends StepError with ExceptionRunEvent[S,E]
+case class ExpectationErrorRunEvent[S,  E](subject: ExpectationSubject, input: S, exception: Throwable, startTime:Long, endTime: Long) extends ExpectationError with ExceptionRunEvent[S,E]
+case class ExpectationFailureRunEvent[S,  E](subject: ExpectationSubject, input: S, failures: Seq[E], startTime:Long, endTime: Long) extends ExpectationFailure with ErrorRunEvent[S,E]

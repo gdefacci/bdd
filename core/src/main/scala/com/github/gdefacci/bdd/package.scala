@@ -1,6 +1,5 @@
 package com.github.gdefacci
 
-import language.higherKinds
 import language.experimental.macros
 
 package object bdd {

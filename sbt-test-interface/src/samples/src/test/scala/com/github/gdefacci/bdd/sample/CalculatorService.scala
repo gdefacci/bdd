@@ -3,7 +3,6 @@ package sample
 
 import testkit.Predicates._
 import scala.util.Try
-import scalaz.Monad
 import scala.util.Success
 import scala.util.Failure
 
@@ -11,20 +10,9 @@ trait CalculatorService {
   def calculate(str: String): Try[Int]
 }
 
-object TryMonad {
-
-  implicit val tryMonad = new Monad[Try] {
-    def bind[A, B](fa: Try[A])(f: A => Try[B]): Try[B] = fa.flatMap(f)
-    def point[A](a: => A): Try[A] = Try(a)
-  }
-
-}
-
-import TryMonad._
-
 case class CalculatorTestState(calculatorService: CalculatorService, input: String, result: Try[Option[Int]])
 
-trait CalculatorServiceSteps extends App with BDD[CalculatorTestState, Try, String] {
+trait CalculatorServiceSteps extends App with BDD[CalculatorTestState, String] {
 
   def createCalculatorService: CalculatorService
 
@@ -33,9 +21,9 @@ trait CalculatorServiceSteps extends App with BDD[CalculatorTestState, Try, Stri
   }
 
   def `the calculator is run`: Step = step { state =>
-    for {
+    (for {
       r <- state.calculatorService.calculate(state.input)
-    } yield state.copy(result = Success(Some(r)))
+    } yield state.copy(result = Success(Some(r)))).get
   }
 
   private def checkSuccess(msg: String, r: Try[TestResult[String]]) = {
@@ -46,19 +34,17 @@ trait CalculatorServiceSteps extends App with BDD[CalculatorTestState, Try, Stri
   }
 
   def `the result given by calculator is`(predicate: Int => Boolean): Expectation = expectation { state =>
-    checkSuccess(s"expecting result $predicate", for {
-      st <- state
-      r0 <- st.result
+    (for {
+      r0 <- state.result
       r <- Try(r0.get)
-    } yield if (predicate(r)) Ok else Fail(s"expecting result $predicate, but got $r"))
+    } yield if (predicate(r)) Ok else Fail(s"expecting result $predicate, but got $r0")).get
   }
 
   def `the output should be`(result: Int): Expectation = expectation { state =>
-    checkSuccess(s"expecting result $result", for {
-      st <- state
-      r0 <- st.result
+    (for {
+      r0 <- state.result
       r <- Try(r0.get)
-    } yield if (r == result) Ok else Fail(s"expecting result $result, but got $r"))
+    } yield if (r == result) Ok else Fail(s"expecting result $result, but got $r0")).get
   }
 
 }

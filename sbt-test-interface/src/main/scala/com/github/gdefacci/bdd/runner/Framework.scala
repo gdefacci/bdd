@@ -4,7 +4,7 @@ package runner
 import sbt.testing.{Framework => BaseFramework, _}
 
 class Framework extends BaseFramework {
-  def name: String = "bdd"
+  val name: String = "bdd"
 
   def fingerprints(): Array[Fingerprint] =
     Array(Framework.ModuleFingerprint)

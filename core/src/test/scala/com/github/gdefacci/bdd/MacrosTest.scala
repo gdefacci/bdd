@@ -13,7 +13,7 @@ class MacrosTest extends FunSuite {
   import Id.Id
   
   test("Source description") {
-    val bdd = new BDD[Int,Id,String] {}
+    val bdd = new BDD[Int,String] {}
     
     val src = bdd.source( () => 1 )
    
@@ -21,7 +21,7 @@ class MacrosTest extends FunSuite {
   }
   
   test("Step description") {
-    val bdd = new BDD[Int,Id,String] {}
+    val bdd = new BDD[Int,String] {}
     
     val step = bdd.step( i => 1 )
    
@@ -29,7 +29,7 @@ class MacrosTest extends FunSuite {
   }
   
   test("Expectation description") {
-    val bdd = new BDD[Int,Id,String] {}
+    val bdd = new BDD[Int,String] {}
     
     val expectation = bdd.expectation( i => Ok )
    
@@ -52,19 +52,19 @@ class MacrosTest extends FunSuite {
 
    test("Scenario description") {
     
-    val bdd = new BDD[Int, Id, Int] {} 
+    val bdd = new BDD[Int,  Int] {} 
      
-    val scenario1 = bdd.scenario( Flow[Int,Id,Int](Text(""), () => 12) ) 
+    val scenario1 = bdd.scenario( Flow[Int,Int](Text(""), () => 12) ) 
    
     assert(scenario1.title == "scenario1")
   }
    
   test("Scenario description 1") {
-     val bdd = new BDD[Int, Id, Int] {} 
+     val bdd = new BDD[Int,  Int] {} 
 
     val scenario1 = {
       val i = 12
-      bdd.scenario( Flow[Int, Id, Int](Text(""), () => i) ) 
+      bdd.scenario( Flow[Int,  Int](Text(""), () => i) ) 
     }
    
     assert(scenario1.title == "scenario1")
